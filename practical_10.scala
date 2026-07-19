@@ -9,20 +9,25 @@ object FilterRowThreshold {
     val data = reader.allWithHeaders()
     reader.close()
 
-    val threshold = 300
+    val threshold = 80
 
-    // Filter rows where "Cholesterol" > 300
+    // Filter rows where Marks > 80
     val filteredRows = data.filter { row =>
-      row.get("Cholesterol").exists(value =>
+      row.get("Marks").exists(value =>
         value.toIntOption.exists(_ > threshold)
       )
     }
 
-    println(s"\nTotal Rows with Cholesterol > $threshold: ${filteredRows.length}\n")
+    println(s"\nTotal Rows with Marks > $threshold: ${filteredRows.length}\n")
 
-    // Print each filtered row
+    // Print header
+    println("RollNo, Name, Age, Marks, Attendance")
+
+    // Print filtered rows
     filteredRows.foreach { row =>
-      println(row.values.mkString(", "))
+      println(
+        s"${row("RollNo")}, ${row("Name")}, ${row("Age")}, ${row("Marks")}, ${row("Attendance")}"
+      )
     }
   }
 }
