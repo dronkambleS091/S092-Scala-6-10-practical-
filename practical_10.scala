@@ -1,54 +1,28 @@
-import scala.io.Source
+import com.github.tototoshi.csv._
+import java.io.File
 
-object MissingValueHandling {
+object FilterRowThreshold {
 
   def main(args: Array[String]): Unit = {
 
-    val fileData = Source.fromFile("list.csv").getLines().toList
+    val reader = CSVReader.open(new File("list.csv"))
+    val data = reader.allWithHeaders()
+    reader.close()
 
-    val header = fileData.head.split(",")
-    val records = fileData.tail.map(_.split(",", -1))
+    val threshold = 300
 
-    // Get index of Age column
-    val ageIndex = header.indexOf("Age")
-
-    if (ageIndex < 0) {
-      println("Age column not found!")
-      return
+    // Filter rows where "Cholesterol" > 300
+    val filteredRows = data.filter { row =>
+      row.get("Cholesterol").exists(value =>
+        value.toIntOption.exists(_ > threshold)
+      )
     }
 
-    // Collect all valid age values
-    val ageValues = records.flatMap { row =>
-      val age = row(ageIndex).trim
+    println(s"\nTotal Rows with Cholesterol > $threshold: ${filteredRows.length}\n")
 
-      if (age.nonEmpty) {
-        try {
-          Some(age.toDouble)
-        } catch {
-          case _: NumberFormatException => None
-        }
-      } else {
-        None
-      }
-    }
-
-    // Calculate average age
-    val averageAge = ageValues.sum / ageValues.length
-
-    println(f"Average Age = $averageAge%.2f\n")
-
-    println("Dataset after filling missing Age values:\n")
-
-    // Display header
-    println(header.mkString(","))
-
-    // Replace empty Age with average
-    records.foreach { row =>
-      if (row(ageIndex).trim.isEmpty) {
-        row(ageIndex) = f"$averageAge%.2f"
-      }
-
-      println(row.mkString(","))
+    // Print each filtered row
+    filteredRows.foreach { row =>
+      println(row.values.mkString(", "))
     }
   }
 }
