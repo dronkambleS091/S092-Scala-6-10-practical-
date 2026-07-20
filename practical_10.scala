@@ -1,33 +1,39 @@
-import com.github.tototoshi.csv._
-import java.io.File
+import scala.io.Source
 
-object FilterRowThreshold {
+object S092prac10 {
 
   def main(args: Array[String]): Unit = {
 
-    val reader = CSVReader.open(new File("list.csv"))
-    val data = reader.allWithHeaders()
-    reader.close()
+    val lines = Source.fromFile("list.csv").getLines().toList
+
+    val header = lines.head.split(",").map(_.trim)
+    val rows = lines.tail
 
     val threshold = 80
 
-    // Filter rows where Marks > 80
-    val filteredRows = data.filter { row =>
-      row.get("Marks").exists(value =>
-        value.toIntOption.exists(_ > threshold)
-      )
-    }
+    println(header.mkString(", "))
 
-    println(s"\nTotal Rows with Marks > $threshold: ${filteredRows.length}\n")
+    rows.foreach { line =>
 
-    // Print header
-    println("RollNo, Name, Age, Marks, Attendance")
+      if (line.trim.nonEmpty) {
 
-    // Print filtered rows
-    filteredRows.foreach { row =>
-      println(
-        s"${row("RollNo")}, ${row("Name")}, ${row("Age")}, ${row("Marks")}, ${row("Attendance")}"
-      )
+        val cols = line.split(",").map(_.trim)
+
+        if (cols.length >= 5) {
+
+          try {
+            val marks = cols(3).toInt
+
+            if (marks > threshold) {
+              println(cols.mkString(", "))
+            }
+
+          } catch {
+            case _: NumberFormatException =>
+              println(s"Invalid marks: ${cols(3)}")
+          }
+        }
+      }
     }
   }
 }
